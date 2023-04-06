@@ -1,6 +1,14 @@
 import { Octokit } from '@octokit/rest';
 import { ListIssuesForRepoDataType } from '../metrics';
 
+const STATUS_DONE_LABEL = 'status/done';
+type Timelines = {
+  title: string;
+  url: string;
+  startDate: string;
+  endDate: string;
+  numberOfDays: number;
+}
 export class CdkRfcMetrics {
   client: Octokit;
   allPrs: ListIssuesForRepoDataType;
@@ -15,9 +23,32 @@ export class CdkRfcMetrics {
 
   /**
    * Timelines for all PRs that were opened and merged and not closed
+   * Start Period, End Period for Issues with label 'status/done'
    */
-  public completionTimelines() {
+  public completionTimelines(): Timelines[] {
+    const results: Timelines[] = [];
 
+    for (const issue of this.allIssues) {
+      if (issue.labels.includes(STATUS_DONE_LABEL) && issue.state === 'closed') {
+        const title = issue.title;
+        const url = issue.html_url;
+        const startDate = issue.created_at;
+        const endDate = issue.closed_at!;
+        const diff = dateDiff(startDate, endDate);
+
+        console.log(`Issue: '${title}',\tUrl: ${url},\tStart Date: ${startDate},\tEnd Date: ${endDate},\tNumber Of Days To Complete: ${diff}\n\n`);
+
+        results.push({
+          title: title,
+          url: url,
+          startDate: startDate,
+          endDate: endDate,
+          numberOfDays: diff,
+        });
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -68,4 +99,14 @@ export class CdkRfcMetrics {
   public rateOfImplementation() {
 
   }
+}
+
+export function dateDiff(startDate: string, endDate: string): number {
+  const startsOn = new Date(startDate).getTime();
+  const endsOn = new Date(endDate).getTime();
+
+  const diff = Math.abs(endsOn - startsOn);
+  const diffInDays = Math.floor(diff/(24 * 60 * 60 * 1000));
+
+  return diffInDays;
 }
