@@ -1,3 +1,14 @@
-export * from './metrics';
+import { Metrics } from './metrics';
+import { CdkRfcMetrics } from './projects/rfc-metrics';
 
-console.log('This is working');
+const owner = '';
+const repo = '';
+const token = '';
+
+const metrics = new Metrics(owner, repo, token);
+const allIssues = async () => {
+  await metrics.getAllIssues();
+};
+const client = metrics.getClient();
+
+new CdkRfcMetrics(client, allIssues);

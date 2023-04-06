@@ -34,4 +34,8 @@ export class Metrics {
       per_page: 100,
     });
   }
+
+  public getClient() {
+    return this.client;
+  }
 }

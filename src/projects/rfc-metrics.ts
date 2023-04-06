@@ -1,7 +1,13 @@
+import { Octokit } from '@octokit/rest';
+
 export class CdkRfcMetrics {
+  client: Octokit;
+  allIssues: any;
 
-  constructor() {
 
+  constructor(client: Octokit, allIssues: any) {
+    this.client = client;
+    this.allIssues = allIssues;
   }
 
   /**

@@ -5,6 +5,7 @@ const project = new typescript.TypeScriptProject({
   name: 'GH-Metrics',
   deps: [
     '@octokit/rest',
+    '@octokit/types',
   ],
   devDeps: [],
 });
