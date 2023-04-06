@@ -22,7 +22,7 @@ export class CdkRfcMetrics {
   }
 
   /**
-   * Timelines for all PRs that were opened and merged and not closed
+   * Timelines for Issues that were successfully entirely completed
    * Start Period, End Period for Issues with label 'status/done'
    */
   public completionTimelines(): Timelines[] {
