@@ -1,4 +1,5 @@
 import { Octokit } from '@octokit/rest';
+import { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
 
 /**
  *      * Timelines to completion for RFC
@@ -27,7 +28,7 @@ export class Metrics {
     });
   }
 
-  public async getAllIssues() {
+  public async getAllIssues(): Promise<GetResponseDataTypeFromEndpointMethod<typeof this.client.issues.listForRepo>> {
     return this.client.paginate(this.client.rest.issues.listForRepo, {
       owner: this.owner,
       repo: this.repo,
