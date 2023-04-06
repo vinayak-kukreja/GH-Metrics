@@ -1,12 +1,15 @@
 import { Octokit } from '@octokit/rest';
+import { ListIssuesForRepoDataType } from '../metrics';
 
 export class CdkRfcMetrics {
   client: Octokit;
-  allIssues: any;
+  allPrs: ListIssuesForRepoDataType;
+  allIssues: ListIssuesForRepoDataType;
 
 
-  constructor(client: Octokit, allIssues: any) {
+  constructor(client: Octokit, allPrs: ListIssuesForRepoDataType, allIssues: ListIssuesForRepoDataType) {
     this.client = client;
+    this.allPrs = allPrs;
     this.allIssues = allIssues;
   }
 

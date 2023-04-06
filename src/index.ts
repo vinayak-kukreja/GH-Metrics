@@ -1,4 +1,4 @@
-import { Metrics } from './metrics';
+import { Metrics, ListIssuesForRepoDataType } from './metrics';
 import { CdkRfcMetrics } from './projects/rfc-metrics';
 
 const owner = '';
@@ -6,9 +6,14 @@ const repo = '';
 const token = '';
 
 const metrics = new Metrics(owner, repo, token);
-const allIssues = async () => {
-  await metrics.getAllIssues();
-};
-const client = metrics.getClient();
 
-new CdkRfcMetrics(client, allIssues);
+let prs: ListIssuesForRepoDataType;
+let issues: ListIssuesForRepoDataType;
+
+async () => {
+  [prs, issues] = await metrics.getAllPrsAndIssues();
+
+  const client = metrics.getClient();
+
+  new CdkRfcMetrics(client, prs, issues);
+};
