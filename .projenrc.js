@@ -1,7 +1,8 @@
-const { javascript } = require("projen");
-const project = new javascript.NodeProject({
-  defaultReleaseBranch: "main",
-  name: "GH-Metrics",
+const { typescript } = require('projen');
+
+const project = new typescript.TypeScriptProject({
+  defaultReleaseBranch: 'main',
+  name: 'GH-Metrics',
   deps: [
     '@octokit/rest',
   ],

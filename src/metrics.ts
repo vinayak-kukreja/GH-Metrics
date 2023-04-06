@@ -1,4 +1,4 @@
-import { Octokit } from "@octokit/rest";
+import { Octokit } from '@octokit/rest';
 
 /**
  *      * Timelines to completion for RFC
@@ -12,24 +12,26 @@ import { Octokit } from "@octokit/rest";
  */
 
 export class Metrics {
-    owner: string;
-    repo: string;
-    token: string;
-    client: Octokit;
+  owner: string;
+  repo: string;
+  token: string;
+  client: Octokit;
 
-    constructor(owner: string, repo: string, token: string) {
-        this.owner = owner;
-        this.repo = repo;
-        this.client = new Octokit({
-            auth: token,
-        });
-    }
+  constructor(owner: string, repo: string, token: string) {
+    this.owner = owner;
+    this.repo = repo;
+    this.token = token;
 
-    public async getAllIssues() {
-        return await this.client.paginate(this.client.rest.issues.listForRepo, {
-            owner: this.owner,
-            repo: this.repo,
-            per_page: 100,
-        });
-    }
+    this.client = new Octokit({
+      auth: this.token,
+    });
+  }
+
+  public async getAllIssues() {
+    return this.client.paginate(this.client.rest.issues.listForRepo, {
+      owner: this.owner,
+      repo: this.repo,
+      per_page: 100,
+    });
+  }
 }
