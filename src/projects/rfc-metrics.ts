@@ -2,6 +2,8 @@ import { Octokit } from '@octokit/rest';
 import { ListIssuesForRepoDataType } from '../metrics';
 
 const STATUS_DONE_LABEL = 'status/done';
+const STATUS_CLOSED = 'closed';
+
 type Timelines = {
   title: string;
   url: string;
@@ -9,6 +11,15 @@ type Timelines = {
   endDate: string;
   numberOfDays: number;
 }
+
+type AbandonedRfcs = {
+  title: string;
+  url: string;
+  lastUpdatedAt: string;
+  daysSinceUpdated: number;
+  status: string;
+}
+
 export class CdkRfcMetrics {
   client: Octokit;
   allPrs: ListIssuesForRepoDataType;
@@ -29,20 +40,16 @@ export class CdkRfcMetrics {
     const results: Timelines[] = [];
 
     for (const issue of this.allIssues) {
-      if (issue.labels.includes(STATUS_DONE_LABEL) && issue.state === 'closed') {
-        const title = issue.title;
-        const url = issue.html_url;
-        const startDate = issue.created_at;
-        const endDate = issue.closed_at!;
-        const diff = dateDiff(startDate, endDate);
+      if (issue.labels.includes(STATUS_DONE_LABEL) && issue.state === STATUS_CLOSED) {
+        const diff = dateDiff(issue.created_at, issue.closed_at!);
 
-        console.log(`Issue: '${title}',\tUrl: ${url},\tStart Date: ${startDate},\tEnd Date: ${endDate},\tNumber Of Days To Complete: ${diff}\n\n`);
+        console.log(`Issue: '${issue.title}',\tUrl: ${issue.html_url},\tStart Date: ${issue.created_at},\tEnd Date: ${issue.closed_at!},\tNumber Of Days To Complete: ${diff}\n\n`);
 
         results.push({
-          title: title,
-          url: url,
-          startDate: startDate,
-          endDate: endDate,
+          title: issue.title,
+          url: issue.html_url,
+          startDate: issue.created_at,
+          endDate: issue.closed_at!,
           numberOfDays: diff,
         });
       }
@@ -52,10 +59,31 @@ export class CdkRfcMetrics {
   }
 
   /**
-   * List and count of all PRs that were closed. This filters on RFC PRs.
+   * All RFCs that were abandoned after opening
+   * Considering if there have been no updates in last 100 days that it is abandoned
    */
-  public abandonedRfcs() {
+  public abandonedRfcs(): AbandonedRfcs[] {
+    const abandonedRfcs: AbandonedRfcs[] = [];
 
+    for (const issue of this.allIssues) {
+      const lastUpdatedDate = issue.updated_at;
+      const currentDate = new Date().toISOString();
+      const daysSinceUpdated = dateDiff(lastUpdatedDate, currentDate);
+
+      console.log(`Issue: '${issue.title}',\tUrl: ${issue.url},\tLast Updated At: ${issue.updated_at},\tNumber of Days Since Last Updated: ${daysSinceUpdated},\tCurrent Status: ${issue.state}\n\n`);
+
+      if (daysSinceUpdated >= 100) {
+        abandonedRfcs.push({
+          title: issue.title,
+          url: issue.url,
+          lastUpdatedAt: issue.updated_at,
+          daysSinceUpdated: daysSinceUpdated,
+          status: issue.state,
+        });
+      }
+    }
+
+    return abandonedRfcs;
   }
 
   /**
