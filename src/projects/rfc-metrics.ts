@@ -3,6 +3,7 @@ import { ListIssuesForRepoDataType } from '../metrics';
 
 const STATUS_DONE_LABEL = 'status/done';
 const STATUS_CLOSED = 'closed';
+const STATUS_OPEN = 'open';
 
 type Timelines = {
   title: string;
@@ -17,7 +18,6 @@ type AbandonedRfcs = {
   url: string;
   lastUpdatedAt: string;
   daysSinceUpdated: number;
-  status: string;
 }
 
 export class CdkRfcMetrics {
@@ -70,15 +70,14 @@ export class CdkRfcMetrics {
       const currentDate = new Date().toISOString();
       const daysSinceUpdated = dateDiff(lastUpdatedDate, currentDate);
 
-      console.log(`Issue: '${issue.title}',\tUrl: ${issue.url},\tLast Updated At: ${issue.updated_at},\tNumber of Days Since Last Updated: ${daysSinceUpdated},\tCurrent Status: ${issue.state}\n\n`);
+      console.log(`Issue: '${issue.title}',\tUrl: ${issue.url},\tLast Updated At: ${issue.updated_at},\tNumber of Days Since Last Updated: ${daysSinceUpdated}\n\n`);
 
-      if (daysSinceUpdated >= 100) {
+      if (daysSinceUpdated >= 100 && issue.state === STATUS_OPEN) {
         abandonedRfcs.push({
           title: issue.title,
           url: issue.url,
           lastUpdatedAt: issue.updated_at,
           daysSinceUpdated: daysSinceUpdated,
-          status: issue.state,
         });
       }
     }
