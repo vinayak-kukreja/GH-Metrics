@@ -36,7 +36,7 @@ export class Metrics {
     });
   }
 
-  public async getAllPrsAndIssues() {
+  public async getAllPrsAndIssues(): Promise<[ListIssuesForRepoDataType, ListIssuesForRepoDataType]> {
     const allItems = await this.client.paginate(
       this.client.rest.issues.listForRepo, {
         owner: this.owner,

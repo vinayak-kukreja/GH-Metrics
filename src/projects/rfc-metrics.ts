@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest';
-import { ListIssuesForRepoDataType } from '../metrics';
+import { ListIssuesForRepoDataType, Metrics } from '../metrics';
 
 const STATUS_DONE_LABEL = 'status/done';
 const STATUS_CLOSED = 'closed';
@@ -20,16 +20,23 @@ type AbandonedRfcs = {
   daysSinceUpdated: number;
 }
 
-export class CdkRfcMetrics {
+export class CdkRfcMetrics extends Metrics {
   client: Octokit;
-  allPrs: ListIssuesForRepoDataType;
-  allIssues: ListIssuesForRepoDataType;
+  allPrs!: ListIssuesForRepoDataType;
+  allIssues!: ListIssuesForRepoDataType;
 
+  constructor(owner: string, repo: string, token: string) {
+    super(owner, repo, token);
 
-  constructor(client: Octokit, allPrs: ListIssuesForRepoDataType, allIssues: ListIssuesForRepoDataType) {
-    this.client = client;
-    this.allPrs = allPrs;
-    this.allIssues = allIssues;
+    this.client = super.getClient();
+  }
+
+  /**
+   * This needs to be done to get all issues and prs for the repo
+   * Unfortunately the constructor cannot be async
+   */
+  public async init() {
+    [this.allPrs, this.allIssues] = await super.getAllPrsAndIssues();
   }
 
   /**
