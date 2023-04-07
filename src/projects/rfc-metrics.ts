@@ -1,9 +1,11 @@
 import { Octokit } from '@octokit/rest';
-import { ListIssuesForRepoDataType, Metrics } from '../metrics';
+import { ListIssuesForRepoDataType, ListTimelineForIssueDataType, Metrics } from '../metrics';
 
 const STATUS_DONE_LABEL = 'status/done';
 const STATUS_CLOSED = 'closed';
 const STATUS_OPEN = 'open';
+const REVIEW_REQUESTED = 'review_requested';
+const REVIEWED = 'reviewed';
 
 type Timelines = {
   title: string;
@@ -95,15 +97,63 @@ export class CdkRfcMetrics extends Metrics {
   /**
    * Average time between authors requesting reviews or adding comments on PRs?
    */
-  public avgIterationTime() {
+  public async avgIterationTime() {
+    let totalTime: number = 0;
+    let totalInstances = 0;
 
+    for (const pr of this.allPrs) {
+      const prTimeline: ListTimelineForIssueDataType = await super.getIssueTimeline(pr.number);
+
+      let pastEventTime = undefined;
+
+      // https://docs.github.com/en/webhooks-and-events/events/issue-event-types#review_requested
+      for (const timeline of prTimeline) {
+        if (timeline.event === REVIEW_REQUESTED && timeline.created_at !== undefined) {
+          if (pastEventTime === undefined) {
+            pastEventTime = new Date(timeline.created_at);
+          } else {
+            totalTime += new Date(timeline.created_at).getTime() - pastEventTime.getTime();
+            ++totalInstances;
+          }
+        }
+      }
+    }
+
+    const milliToMins = 60 * 1000;
+    const avgTimeline = totalTime/(totalInstances * milliToMins);
+
+    return avgTimeline;
   }
 
   /**
    * Average response time of bar raisers during reviews
    */
-  public avgResponseTime() {
+  public async avgResponseTime() {
+    let totalTime: number = 0;
+    let totalInstances = 0;
 
+    for (const pr of this.allPrs) {
+      const prTimeline: ListTimelineForIssueDataType = await super.getIssueTimeline(pr.number);
+
+      let pastEventTime = undefined;
+
+      https://docs.github.com/en/webhooks-and-events/events/issue-event-types#reviewed
+      for (const timeline of prTimeline) {
+        if (timeline.event === REVIEWED && timeline.created_at !== undefined) {
+          if (pastEventTime === undefined) {
+            pastEventTime = new Date(timeline.created_at);
+          } else {
+            totalTime += new Date(timeline.created_at).getTime() - pastEventTime.getTime();
+            ++totalInstances;
+          }
+        }
+      }
+    }
+
+    const milliToMins = 60 * 1000;
+    const avgTimeline = totalTime/(totalInstances * milliToMins);
+
+    return avgTimeline;
   }
 
   /**

@@ -1,23 +1,16 @@
 import { Octokit } from '@octokit/rest';
 import { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
 
-/**
- *      * Timelines to completion for RFC
-        * Abandoned RFCs
-        * Average time between iterations from users
-        * Average time between responses from us
-        * Number of RFC received overtime
-        * Rate of closure
-        * Timeline of assigning bar raisers
-        * Percentage of implementation for accepted RFCs
- */
-
 const octokit = new Octokit();
 // type CreateLabelResponseType = GetResponseTypeFromEndpointMethod<
 //   typeof octokit.issues.createLabel
 // >;
 export type ListIssuesForRepoDataType = GetResponseDataTypeFromEndpointMethod<
   typeof octokit.issues.listForRepo
+>;
+
+export type ListTimelineForIssueDataType = GetResponseDataTypeFromEndpointMethod<
+  typeof octokit.issues.listEventsForTimeline
 >;
 
 export class Metrics {
@@ -57,6 +50,18 @@ export class Metrics {
   // All PRs are Issues but not all Issues are PRs
   private getAllPrs(allIssues: ListIssuesForRepoDataType): ListIssuesForRepoDataType {
     return allIssues.filter((issue) => issue.pull_request);
+  }
+
+  public async getIssueTimeline(issueNumber: number): Promise<ListTimelineForIssueDataType> {
+    const timeline = await this.client.paginate(
+      this.client.rest.issues.listEventsForTimeline, {
+        owner: this.owner,
+        repo: this.repo,
+        issue_number: issueNumber,
+        per_page: 100,
+      });
+
+    return timeline;
   }
 
   public getClient() {
