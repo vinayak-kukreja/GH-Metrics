@@ -22,6 +22,12 @@ type AbandonedRfcs = {
   daysSinceUpdated: number;
 }
 
+type BarRaiserTimeline = {
+  prNumber: number;
+  title: string;
+  numberOfDays: number;
+};
+
 export class CdkRfcMetrics extends Metrics {
   client: Octokit;
   allPrs!: ListIssuesForRepoDataType;
@@ -159,29 +165,84 @@ export class CdkRfcMetrics extends Metrics {
   /**
    * Number of Rfcs over a period of time
    */
-  public numberOfRfcsReceived() {
+  public numberOfRfcsReceived(startDate: Date, endDate: Date): number {
+    let counter: number = 0;
 
+    for (const issue of this.allIssues) {
+      const createdDate = new Date(issue.created_at);
+
+      if (createdDate >= startDate && createdDate <= endDate) {
+        ++counter;
+      }
+    }
+
+    return counter;
   }
 
   /**
-   * ?????
+   * Number of Rfcs over a period of time
+   */
+  public numberOfRfcsCompleted(startDate: Date, endDate: Date): number {
+    let counter: number = 0;
+
+    for (const issue of this.allIssues) {
+      const createdDate = new Date(issue.created_at);
+
+      if (createdDate >= startDate &&
+        createdDate <= endDate &&
+        issue.labels.includes(STATUS_DONE_LABEL) &&
+        issue.state === STATUS_CLOSED) {
+        ++counter;
+      }
+    }
+
+    return counter;
+  }
+
+  /**
+   * Rate of closing RFCs
+   *
+   * (Closed/Incoming)
    */
   public rateOfClosure() {
+    let numberOfRfcsCompleted: number = 0;
+    let numberOfRfcs: number = this.allIssues.length;
 
+    for (const issue of this.allIssues) {
+      if (issue.labels.includes(STATUS_DONE_LABEL)) {
+        ++numberOfRfcsCompleted;
+      }
+    }
+
+    const rate = (numberOfRfcsCompleted/numberOfRfcs);
+
+    return rate;
   }
 
   /**
    * Timeline for assigning a bar raiser
    */
-  public barRaiserAssignTimeline() {
+  public async barRaiserAssignTimeline() {
+    const data: BarRaiserTimeline[] = [];
 
-  }
+    for (const pr of this.allPrs) {
+      const prCreatedDate = pr.created_at;
+      const timeline = await this.getIssueTimeline(pr.number);
 
-  /**
-   * Rate of RFCs that are implemented
-   */
-  public rateOfImplementation() {
+      for (const event of timeline) {
+        if (event.event === 'review_requested' && event.created_at !== undefined) {
+          const diff = dateDiff(prCreatedDate, event.created_at);
 
+          data.push({
+            prNumber: pr.number,
+            title: pr.title,
+            numberOfDays: diff,
+          });
+        }
+      }
+    }
+
+    return data;
   }
 }
 
