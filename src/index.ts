@@ -20,4 +20,17 @@ const metrics = new CdkRfcMetrics(owner, repo, token);
 
 async () => {
   await metrics.init();
+  await metrics.avgIterationTime();
+  await metrics.avgResponseTime();
+  await metrics.barRaiserAssignTimeline();
 };
+
+metrics.completionTimelines();
+metrics.abandonedRfcs();
+
+const startDate = new Date('2022-01-01');
+const endDate = new Date('2023-01-01');
+metrics.numberOfRfcsReceived(startDate, endDate);
+metrics.numberOfRfcsCompleted(startDate, endDate);
+
+metrics.rateOfClosure();
