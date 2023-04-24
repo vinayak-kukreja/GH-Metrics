@@ -2,9 +2,7 @@ import { Octokit } from '@octokit/rest';
 import { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
 
 const octokit = new Octokit();
-// type CreateLabelResponseType = GetResponseTypeFromEndpointMethod<
-//   typeof octokit.issues.createLabel
-// >;
+
 export type ListIssuesForRepoDataType = GetResponseDataTypeFromEndpointMethod<
   typeof octokit.issues.listForRepo
 >;
