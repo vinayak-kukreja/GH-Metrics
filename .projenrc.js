@@ -6,6 +6,7 @@ const project = new typescript.TypeScriptProject({
   deps: [
     '@octokit/rest',
     '@octokit/types',
+    'd3',
   ],
   devDeps: [],
 });
